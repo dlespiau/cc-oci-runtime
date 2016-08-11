@@ -35,6 +35,12 @@ virtconsole,chardev=charconsole0,id=console0
 @CONSOLE_DEVICE@
 -chardev
 @PROCESS_SOCKET@
+-device
+virtio-serial-pci
+-chardev
+@EXIT_STATUS_PIPE@
+-device
+virtserialport,chardev=exit_status,name=org.clearlinux.exit_status
 -uuid
 @UUID@
 -qmp

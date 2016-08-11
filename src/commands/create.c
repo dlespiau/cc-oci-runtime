@@ -53,6 +53,12 @@ static GOptionEntry options_create[] =
 		"container to",
 	       	NULL
 	},
+	{
+		"exit-status-pipe", 0, G_OPTION_FLAG_NONE,
+		G_OPTION_ARG_FILENAME, &start_data.exit_status_pipe,
+		"path to a named pipe the exit status will be written to",
+		NULL
+	},
 
 	{NULL}
 };

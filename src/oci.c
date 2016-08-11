@@ -611,7 +611,8 @@ cc_oci_create_container_workload (struct cc_oci_config *config)
 	g_string_printf(contents,
 			"#!%s\n"
 			"cd %s\n"
-			"%s\n",
+			"%s\n"
+			"echo $? > /.containerstatus\n",
 			CC_OCI_WORKLOAD_SHELL,
 			cwd,
 			workload_cmdline);

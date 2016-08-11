@@ -33,6 +33,9 @@
 #include "util.h"
 #include "hypervisor.h"
 #include "common.h"
+#include "command.h"
+
+extern struct start_data start_data;
 
 /** Length of an ASCII-formatted UUID */
 #define UUID_MAX 37
@@ -44,6 +47,21 @@
  */
 private gchar *sysconfdir = SYSCONFDIR;
 private gchar *defaultsdir = DEFAULTSDIR;
+
+static gchar *
+cc_oci_expand_exit_status_pipe(struct cc_oci_config *config)
+{
+	if (start_data.exit_status_pipe) {
+		return g_strdup_printf("pipe,path=%s,id=exit_status",
+				       start_data.exit_status_pipe);
+	} else {
+		/* We always install the invariant that the virtio device
+		 * exists, even if containerd(-shim) doesn't create the pipe
+		 * for us (eg. running with an older version of containerd)
+		 */
+		return g_strdup("null,id=exit_status");
+	}
+}
 
 static gchar *
 cc_oci_expand_net_cmdline(struct cc_oci_config *config) {
@@ -136,6 +154,7 @@ cc_oci_expand_cmdline (struct cc_oci_config *config,
 	gchar            *netdev_params = NULL;
 	gchar            *net_device_option = NULL;
 	gchar            *netdev_option = NULL;
+	g_autofree gchar *exit_status_pipe = NULL;
 
 	if (! (config && args)) {
 		return false;
@@ -269,6 +288,8 @@ cc_oci_expand_cmdline (struct cc_oci_config *config,
 
 	procsock_device = g_strdup_printf ("socket,id=procsock,path=%s,server,nowait", config->state.procsock_path);
 
+	exit_status_pipe = cc_oci_expand_exit_status_pipe(config);
+
 	kernel_net_params = cc_oci_expand_net_cmdline(config);
 
 	if ( config->net.tap_device == NULL ) {
@@ -304,6 +325,7 @@ cc_oci_expand_cmdline (struct cc_oci_config *config,
 		{ "@COMMS_SOCKET@"      , config->state.comms_path   },
 		{ "@PROCESS_SOCKET@"    , procsock_device            },
 		{ "@CONSOLE_DEVICE@"    , console_device             },
+		{ "@EXIT_STATUS_PIPE@"  , exit_status_pipe           },
 		{ "@NAME@"              , g_strrstr(uuid_str, "-")+1 },
 		{ "@UUID@"              , uuid_str                   },
 		{ "@NETDEV@"            , netdev_option              },
