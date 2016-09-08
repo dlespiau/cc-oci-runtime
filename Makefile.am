@@ -194,6 +194,12 @@ cc_oci_runtime_CFLAGS = \
 	$(LIBMNL_CFLAGS) \
 	$(UUID_CFLAGS)
 
+libexec_PROGRAMS = cc-shim
+
+cc_shim_SOURCES =	\
+	shim/shim.c	\
+	$(NULL)
+
 bats_test_sources = \
 	tests/functional/common.bash.in \
 	tests/functional/data/config-minimal-cc-oci.json.in \
