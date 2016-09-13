@@ -22,6 +22,23 @@ set -e -x
 cwd=$(cd `dirname "$0"`; pwd -P)
 source $cwd/versions.txt
 
+#
+# Install go
+#
+
+go_tarball=go${go_version}.linux-amd64.tar.gz
+curl -L -O https://storage.googleapis.com/golang/$go_tarball
+tar xvf $go_tarball 1>/dev/null
+# Unfortunately, go doesn't support vendoring outside of GOPATH (maybe in 1.8?)
+# So, we setup a GOPATH tree with our vendored dependencies.
+# See: https://github.com/golang/go/issues/14566
+mkdir -p $GOPATH/src
+cp -r vendor/* $GOPATH/src
+
+#
+# Install cc-oci-runtime dependencies
+#
+
 # Ensure "make install" as root can find clang
 #
 # See: https://github.com/travis-ci/travis-ci/issues/2607
