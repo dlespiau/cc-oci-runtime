@@ -200,6 +200,23 @@ cc_shim_SOURCES =	\
 	shim/shim.c	\
 	$(NULL)
 
+libexec_SCRIPTS = cc-proxy
+
+AM_V_GO    = $(am__v_GO_@AM_V@)
+am__v_GO_  = $(am__v_GO_@AM_DEFAULT_V@)
+am__v_GO_0 = @echo "  GOBUILD " $@;
+am__v_GO_1 =
+
+cc-proxy: $(cc_proxy_sources)
+	$(AM_V_GO)go build -o $@ $(srcdir)/proxy
+
+cc_proxy_sources =			\
+	proxy/jsonproto.go		\
+	proxy/proxy.go			\
+	proxy/socket_activation.go	\
+	proxy/vm.go			\
+	$(NULL)
+
 bats_test_sources = \
 	tests/functional/common.bash.in \
 	tests/functional/data/config-minimal-cc-oci.json.in \
@@ -224,6 +241,7 @@ EXTRA_DIST = \
 	versions.txt \
 	$(defaults_DATA) \
 	$(cc_image_systemd_files) \
+	$(cc_proxy_sources) \
 	data/cc-oci-runtime.sh.in \
 	$(bats_test_sources) \
 	tests/integration
