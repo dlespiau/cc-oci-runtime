@@ -1,0 +1,8 @@
+[Unit]
+Description=Clear Containers Proxy
+
+[Service]
+ExecStart=@libexecdir@/cc-proxy
+
+[Install]
+WantedBy=multi-user.target
