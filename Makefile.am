@@ -93,6 +93,7 @@ CLEANFILES += $(GENERATED_FILES)
 AM_CPPFLAGS = -I $(top_srcdir)/src -DG_LOG_DOMAIN=\"$(PACKAGE_NAME)\" \
 	-DSYSCONFDIR=\"$(SYSCONFDIR)\" \
 	-DDEFAULTSDIR=\"$(DEFAULTSDIR)\" \
+	-DLOCALSTATEDIR=\"$(localstatedir)\" \
 	-DGIT_COMMIT=\"$(STORED_COMMIT)\"
 
 defaultsdir = $(datadir)/defaults/$(PACKAGE_NAME)
@@ -146,6 +147,7 @@ common_sources = \
 	src/oci-config.c src/oci-config.h \
 	src/hypervisor.c src/hypervisor.h \
 	src/json.c src/json.h \
+	src/proxy.c src/proxy.h \
 	src/spec_handler.c src/spec_handler.h \
 	src/common.h \
 	src/command.c src/command.h \
