@@ -86,6 +86,29 @@ func helloHandler(data []byte, userData interface{}) (map[string]interface{}, er
 	return nil, nil
 }
 
+// "hyper"
+type hyperCmd struct {
+	Name string          `json:name`
+	Data json.RawMessage `json:data`
+}
+
+func hyperHandler(data []byte, userData interface{}) (map[string]interface{}, error) {
+	client := userData.(*client)
+	hyper := hyperCmd{}
+	vm := client.vm
+
+	if err := json.Unmarshal(data, &hyper); err != nil {
+		return nil, err
+	}
+
+	if vm == nil {
+		return nil, errors.New("client not attached to a vm")
+	}
+
+	err := vm.SendMessage(hyper.Name, hyper.Data)
+	return nil, err
+}
+
 func NewProxy() *proxy {
 	return &proxy{
 		vms: make(map[string]*vm),
@@ -115,6 +138,7 @@ func (proxy *proxy) Serve() {
 	// Define the client (runtime/shim) <-> proxy protocol
 	proto := NewJsonProto()
 	proto.Handle("hello", helloHandler)
+	proto.Handle("hyper", hyperHandler)
 
 	for {
 		conn, err := proxy.listener.Accept()
