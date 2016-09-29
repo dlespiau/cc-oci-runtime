@@ -62,6 +62,12 @@ The `hello` command is issued first after connecting to the proxy socket.  It's
 used to let the proxy know about a new container on the system along with the
 paths go hyperstart's command and I/O channels (`AF_UNIX` sockets).
 
+### `bye`
+
+The `bye` commands does the opposite of what `hello` does, indicating to the
+proxy it should release resources created by `hello`. This command has no
+parameter.
+
 ### `hyper`
 
 ```
