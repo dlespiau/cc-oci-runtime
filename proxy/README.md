@@ -1,9 +1,27 @@
 # `cc-proxy`
 
-`cc-proxy` is a daemon offering access to the VM agent to multiple clients on
-the host. It exposes an API accessible through an `AF_UNIX` socket.
+`cc-proxy` is a daemon offering access to the
+[`hyperstart`](https://github.com/hyperhq/hyperstart) VM agent to multiple
+clients on the host.
 
-This socket can be found at: `${localstatesdir}/run/cc-oci-runtime/proxy.sock`.
+![High-level Architecture Diagram](../documentation/high-level-overview.png)
+
+- The `hyperstart` interface consists of:
+    - A control channel on which the [`hyperstart` API]
+      (https://github.com/hyperhq/runv/tree/master/hyperstart/api/json) is
+      delivered.
+    - An I/O channel with the stdin/stout/stderr streams of the processes
+      running inside the VM multiplexed onto.
+- `cc-proxy`'s main role is to:
+    - Arbitrate access to the `hyperstart` control channel between all the
+      instances of the OCI runtimes and `cc-shim`.
+    - Route the I/O streams between the various shim instances and `hyperstart`.
+- There's only one instance of `cc-proxy` per host.
+ 
+
+`cc-proxy` itself has an API to setup the route to the hypervisor/hyperstart
+and to forward `hyperstart` commands. This API is done with a small JSON RPC
+protocol on an `AF_UNIX` located at: `${localstatesdir}/run/cc-oci-runtime/proxy.sock`
 
 ## Protocol
 
