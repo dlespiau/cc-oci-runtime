@@ -155,7 +155,7 @@ func (proxy *proxy) Init() error {
 func (proxy *proxy) Serve() {
 
 	// Define the client (runtime/shim) <-> proxy protocol
-	proto := NewJsonProto()
+	proto := NewProtocol()
 	proto.Handle("hello", helloHandler)
 	proto.Handle("bye", byeHandler)
 	proto.Handle("hyper", hyperHandler)

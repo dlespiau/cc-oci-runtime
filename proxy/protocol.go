@@ -15,7 +15,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,32 +36,32 @@ type Response struct {
 }
 
 // XXX: could do with its own package to remove that ugly namespacing
-type JsonProtoHandler func([]byte, interface{}) (map[string]interface{}, error)
+type ProtocolHandler func([]byte, interface{}) (map[string]interface{}, error)
 
-type JsonProto struct {
-	handlers map[string]JsonProtoHandler
+type Protocol struct {
+	handlers map[string]ProtocolHandler
 }
 
-func NewJsonProto() *JsonProto {
-	return &JsonProto{
-		handlers: make(map[string]JsonProtoHandler),
+func NewProtocol() *Protocol {
+	return &Protocol{
+		handlers: make(map[string]ProtocolHandler),
 	}
 }
 
-func (proto *JsonProto) Handle(cmd string, handler JsonProtoHandler) {
+func (proto *Protocol) Handle(cmd string, handler ProtocolHandler) {
 	proto.handlers[cmd] = handler
 }
 
 type clientCtx struct {
 	conn net.Conn
 
-	reader  *bufio.Reader
+	decoder *json.Decoder
 	encoder *json.Encoder
 
 	userData interface{}
 }
 
-func (proto *JsonProto) handleRequest(ctx *clientCtx, req *Request) (*Response, error) {
+func (proto *Protocol) handleRequest(ctx *clientCtx, req *Request) (*Response, error) {
 	handler, ok := proto.handlers[req.Command]
 	if !ok {
 		return nil, fmt.Errorf("couldn't find command '%s'", req.Command)
@@ -77,45 +76,34 @@ func (proto *JsonProto) handleRequest(ctx *clientCtx, req *Request) (*Response, 
 			Error:   err.Error(),
 			Data:    respMap,
 		}
-	} else if respMap != nil {
-		resp = &Response{
-			Id:      req.Id,
-			Success: true,
-			Data:    respMap,
-		}
 	} else {
 		resp = &Response{
 			Id:      req.Id,
 			Success: true,
+			Data:    respMap,
 		}
 	}
 
 	return resp, nil
 }
 
-func (proto *JsonProto) Serve(conn net.Conn, userData interface{}) {
+func (proto *Protocol) Serve(conn net.Conn, userData interface{}) {
 	ctx := &clientCtx{
 		conn:     conn,
 		userData: userData,
-		reader:   bufio.NewReader(conn),
+		decoder:  json.NewDecoder(conn),
 		encoder:  json.NewEncoder(conn),
 	}
 
 	for {
-		// Read one line.
-		line, err := ctx.reader.ReadBytes('\n')
+		// Parse a request.
+		req := Request{}
+		err := ctx.decoder.Decode(&req)
 		if err == io.EOF {
 			return
 		} else if err != nil {
-			fmt.Fprintf(os.Stderr, "read error: %s", err)
+			fmt.Fprintf(os.Stderr, "couldn't decode request: %s", err)
 			return
-		}
-
-		// Parse the request.
-		req := Request{}
-		if err = json.Unmarshal(line, &req); err != nil {
-			fmt.Fprintf(os.Stderr, "malformed request, ignoring: '%v\n'", line)
-			continue
 		}
 
 		// Execute the corresponding handler

@@ -225,7 +225,7 @@ cc-proxy: $(cc_proxy_sources)
 	$(AM_V_GO)go build -o $@ $(srcdir)/proxy
 
 cc_proxy_sources =			\
-	proxy/jsonproto.go		\
+	proxy/protocol.go		\
 	proxy/proxy.go			\
 	proxy/socket_activation.go	\
 	proxy/vm.go			\
