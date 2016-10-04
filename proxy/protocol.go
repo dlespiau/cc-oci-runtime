@@ -17,7 +17,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net"
 	"os"
 )
@@ -59,28 +58,34 @@ type clientCtx struct {
 	userData interface{}
 }
 
-func (proto *Protocol) handleRequest(ctx *clientCtx, req *Request) (*Response, error) {
-	handler, ok := proto.handlers[req.Id]
-	if !ok {
-		return nil, fmt.Errorf("couldn't find command '%s'", req.Id)
+func (proto *Protocol) handleRequest(ctx *clientCtx, req *Request) *Response {
+	if req.Id == "" {
+		return &Response{
+			Success: false,
+			Error:   "no 'id' field in request",
+		}
 	}
 
-	var resp *Response
+	handler, ok := proto.handlers[req.Id]
+	if !ok {
+		return &Response{
+			Success: false,
+			Error:   fmt.Sprintf("no payload named '%s'", req.Id),
+		}
+	}
 
 	if respMap, err := handler(req.Data, ctx.userData); err != nil {
-		resp = &Response{
+		return &Response{
 			Success: false,
 			Error:   err.Error(),
 			Data:    respMap,
 		}
 	} else {
-		resp = &Response{
+		return &Response{
 			Success: true,
 			Data:    respMap,
 		}
 	}
-
-	return resp, nil
 }
 
 func (proto *Protocol) Serve(conn net.Conn, userData interface{}) {
@@ -93,25 +98,17 @@ func (proto *Protocol) Serve(conn net.Conn, userData interface{}) {
 
 	for {
 		// Parse a request.
-		req := Request{}
+		var req Request
 		err := ctx.decoder.Decode(&req)
-		if err == io.EOF {
-			return
-		} else if err != nil {
-			fmt.Fprintf(os.Stderr, "couldn't decode request: %v\n", err)
+		if err != nil {
+			// EOF or the client isn't even sending proper JSON,
+			// just kill the connection
+			conn.Close()
 			return
 		}
 
 		// Execute the corresponding handler
-		resp, err := proto.handleRequest(ctx, &req)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "could handle request: %v\n", err)
-		}
-
-		// The command didn't generate any response, next!
-		if resp == nil {
-			continue
-		}
+		resp := proto.handleRequest(ctx, &req)
 
 		// Send the response back to the client.
 		if err = ctx.encoder.Encode(resp); err != nil {
