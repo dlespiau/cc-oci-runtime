@@ -230,6 +230,11 @@ cc_proxy_sources =			\
 	proxy/socket_activation.go	\
 	proxy/vm.go
 
+CHECK_DEPS += check-proxy
+
+check-proxy:
+	go test $(srcdir)/proxy
+
 bats_test_sources = \
 	tests/functional/common.bash.in \
 	tests/functional/data/config-minimal-cc-oci.json.in \
