@@ -27,7 +27,8 @@ func TestFdPassing(t *testing.T) {
 
 	// Passes the reader end of the pipe fd through a AF_UNIX connection
 	// and recreate an os.File from the received fd
-	c0, c1 := Socketpair(t)
+	c0, c1, err := Socketpair()
+	assert.Nil(t, err)
 
 	err = WriteFd(c0, int(reader.Fd()))
 	assert.Nil(t, err)
