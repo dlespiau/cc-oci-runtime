@@ -233,6 +233,7 @@ cc-proxy: $(cc_proxy_sources)
 
 cc_proxy_sources =			\
 	proxy/api/api.go		\
+	proxy/api/fdpassing.go		\
 	proxy/protocol.go		\
 	proxy/proxy.go			\
 	proxy/socket_activation.go	\
