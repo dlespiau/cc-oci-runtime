@@ -153,20 +153,27 @@ func (vm *vm) writeMessage(m *hyper.DecodedMessage) (err error) {
 		return err
 	}
 
-	// Consume the ack (NEXT) message
-	next, err := vm.readMessage()
-	if err != nil {
-		return nil
+	// Consume the ack (NEXT) messages until we've acked the full message
+	// we've just written
+	acked := 0
+	for acked < length {
+		next, err := vm.readMessage()
+		if err != nil {
+			return nil
+		}
+		if next.Code != hyper.INIT_NEXT {
+			return errors.New("didn't receive NEXT from hyperstart")
+		}
+		if len(next.Message) != 4 {
+			return errors.New("wrong size for NEXT message")
+		}
+		acked += int(binary.BigEndian.Uint32(next.Message[0:4]))
 	}
-	if next.Code != hyper.INIT_NEXT {
-		return errors.New("didn't receive NEXT from hyperstart")
-	}
-	if len(next.Message) != 4 {
-		return errors.New("wrong size for NEXT message")
-	}
-	got := int(binary.BigEndian.Uint32(next.Message[0:4]))
-	if length != got {
-		return errors.New("wrong acked size by NEXT message")
+
+	// Somehow hyperstart acked more than it should?
+	if acked != length {
+		fmt.Fprintf(os.Stderr,
+			"wrong acked size by NEXT message (expected %d, got %d)", length, acked)
 	}
 
 	return nil
