@@ -231,6 +231,15 @@ func (proxy *proxy) Init() error {
 	return nil
 }
 
+func (proxy *proxy) serveNewClient(proto *Protocol, newConn net.Conn) {
+	newClient := &client{
+		proxy: proxy,
+		conn:  newConn,
+	}
+
+	proto.Serve(newConn, newClient)
+}
+
 func (proxy *proxy) Serve() {
 
 	// Define the client (runtime/shim) <-> proxy protocol
@@ -248,12 +257,7 @@ func (proxy *proxy) Serve() {
 			continue
 		}
 
-		newClient := &client{
-			proxy: proxy,
-			conn:  conn,
-		}
-
-		go proto.Serve(conn, newClient)
+		go proxy.serveNewClient(proto, conn)
 	}
 }
 
