@@ -236,7 +236,7 @@ func (proxy *proxy) Serve() {
 	// Define the client (runtime/shim) <-> proxy protocol
 	proto := NewProtocol()
 	proto.Handle("hello", helloHandler)
-	proto.Handle("attach", helloHandler)
+	proto.Handle("attach", attachHandler)
 	proto.Handle("bye", byeHandler)
 	proto.Handle("allocateIO", allocateIoHandler)
 	proto.Handle("hyper", hyperHandler)
