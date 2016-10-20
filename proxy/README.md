@@ -31,10 +31,12 @@ encoding the result of the call.
 
 Each message is composed of a header and some data:
 
+```
   ┌────────────────┬────────────────┬──────────────────────────────┐
   │  Data Length   │    Reserved    │  Data (request or response)  │
   │   (32 bits)    │    (32 bits)   │     (data length bytes)      │
   └────────────────┴────────────────┴──────────────────────────────┘
+```
 
 - `Data Length` is in bytes and encoded in network order.
 - `Reserved` is reserved for future use.
