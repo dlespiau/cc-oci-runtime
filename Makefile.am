@@ -55,7 +55,9 @@ src/commands/cc_oci_runtime-version.$(OBJEXT): \
 
 GENERATED_FILES = \
 	data/cc-oci-runtime.sh \
+	data/config.json \
 	data/run-bats.sh \
+	data/vm.json \
 	tests/functional/common.bash \
 	tests/functional/data/config-minimal-cc-oci.json \
 	tests/metrics/density/docker_cpu_usage.sh \
