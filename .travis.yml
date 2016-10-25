@@ -35,7 +35,7 @@ script:
 - ../$tarball_dir/configure --sysconfdir=/etc --localstatedir=/var --prefix=/usr --enable-cppcheck --enable-valgrind --disable-valgrind-helgrind --disable-valgrind-drd --disable-silent-rules --disable-docker-tests
 - pwd 
 - ls tests/mock
-- make -j5 CFLAGS=-Werror check
+- make CFLAGS=-Werror check
 - cd ..
 
 after_failure:
