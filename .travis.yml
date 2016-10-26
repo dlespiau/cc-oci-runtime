@@ -22,14 +22,22 @@ env:
     - coverity_scan_run_condition='"$CC" = gcc'
 
 before_script:
-- ./.travis-setup.sh
+- ./.travis/travis-setup.sh
 
 script:
-- ./autogen.sh --enable-cppcheck --enable-valgrind --disable-valgrind-helgrind --disable-valgrind-drd --disable-silent-rules --disable-docker-tests
+- ./autogen.sh
+# We run configure and make check in an exploded make dist tarball to make sure
+# we distribute the necessary files for both building and testing.
+# We also do an out of tree build to check srcdir vs builddir discrepancy.
+- source ./.travis/travis-setup-test-directory.sh
+- mkdir travis_build
+- cd travis_build
+- ../$tarball_dir/configure --sysconfdir=/etc --localstatedir=/var --prefix=/usr --enable-cppcheck --enable-valgrind --disable-valgrind-helgrind --disable-valgrind-drd --disable-silent-rules --disable-docker-tests
 - make -j5 CFLAGS=-Werror check
+- cd ..
 
 after_failure:
-- ./.travis-teardown.sh
+- ./.travis/travis-teardown.sh
 
 notifications:
   email:

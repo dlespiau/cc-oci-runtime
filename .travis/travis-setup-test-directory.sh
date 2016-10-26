@@ -16,14 +16,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 
-# This script can be used to run bats functional test without lose network
-# configuration.
+# We run the travis script from an exploded `make dist` tarball to ensure
+# `make dist` has the necessary files to compile and run the tests.
 #
-# See https://github.com/01org/cc-oci-runtime/issues/93
-cmd="@BATS_PATH@"
-#Networking is not configured using non-root user
-#run bats functional tests with network namespace unshared
-[ $(id -u) -eq 0 ] && cmd="unshare -n $cmd"
-eval "$cmd" $@
+# Note: we don't use `make distcheck` here as we can't run everything we want
+#       for discheck in travis.
+chronic make dist
+tarball=`ls -1 cc-oci-runtime-*.tar.xz`
+chronic tar xvf "$tarball"
+export tarball_dir=${tarball%.tar.xz}
