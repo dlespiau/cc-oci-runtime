@@ -138,7 +138,8 @@ DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-cppcheck \
 	--enable-valgrind \
 	--enable-code-coverage \
-	--enable-functional-tests
+	--enable-functional-tests \
+	--with-systemdsystemunitdir=/tmp/cc-distcheck/systemdunitdir/
 
 bin_PROGRAMS = cc-oci-runtime
 dist_bin_SCRIPTS = data/cc-oci-runtime.sh
