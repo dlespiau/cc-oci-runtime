@@ -50,6 +50,9 @@ type vm struct {
 
 	// Used to wait for all VM-global goroutines to finish on Close()
 	wg sync.WaitGroup
+
+	// Channel to signal qemu has terminated.
+	vmLost chan interface{}
 }
 
 // A set of I/O streams between a client and a process running inside the VM
@@ -76,6 +79,7 @@ func newVM(id, ctlSerial, ioSerial string) *vm {
 		hyperHandler: h,
 		nextIoBase:   1,
 		ioSessions:   make(map[uint64]*ioSession),
+		vmLost:       make(chan interface{}),
 	}
 }
 
@@ -132,6 +136,7 @@ func (vm *vm) ioHyperToClients() {
 		msg, err := vm.hyperHandler.ReadIoMessage()
 		if err != nil {
 			// VM process is gone
+			vm.signalVmLost()
 			break
 		}
 
@@ -300,4 +305,14 @@ func (vm *vm) Close() {
 
 	// Wait for VM global goroutines
 	vm.wg.Wait()
+}
+
+// OnVmLost returns a channel that can be waiting on to be signalled the end
+// of the qemu process.
+func (vm *vm) OnVmLost() <-chan interface{} {
+	return vm.vmLost
+}
+
+func (vm *vm) signalVmLost() {
+	close(vm.vmLost)
 }
