@@ -153,6 +153,7 @@ func (vm *vm) ioHyperToClients() {
 			// When the shim is forcefully killed, it's possible we
 			// still have data to write. Ignore errors for that case.
 			vm.infof(1, "io", "error writing I/O data to client:", err)
+			vm.closeSession(session)
 			continue
 		}
 	}
@@ -270,6 +271,16 @@ func (vm *vm) AllocateIo(n int, clientID uint64, c net.Conn) uint64 {
 func (session *ioSession) Close() {
 	session.client.Close()
 	session.wg.Wait()
+}
+
+func (vm *vm) closeSession(session *ioSession) {
+	vm.Lock()
+	for i := 0; i < session.nStreams; i++ {
+		delete(vm.ioSessions, session.ioBase+uint64(i))
+	}
+	vm.Unlock()
+
+	session.Close()
 }
 
 func (vm *vm) Close() {
